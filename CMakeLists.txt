@@ -34,7 +34,8 @@ add_compile_definitions(
 
 add_executable(Application 
     ${CMAKE_SOURCE_DIR}/Core/Src/main.cpp
-    #${CMAKE_SOURCE_DIR}/Core/Src/model_tflite.cc
+    ${CMAKE_SOURCE_DIR}/Core/Src/model_tflite.cc
+	${CMAKE_SOURCE_DIR}/Core/Src/debug_log.c
     ${CMAKE_SOURCE_DIR}/Core/Src/stm32f4xx_hal_msp.c
     ${CMAKE_SOURCE_DIR}/Core/Src/stm32f4xx_it.c
     ${CMAKE_SOURCE_DIR}/Core/Src/syscalls.c
@@ -44,7 +45,7 @@ add_executable(Application
 )
 
 target_include_directories(Application PRIVATE
-  #${CMAKE_SOURCE_DIR}/Core/Src
+  ${CMAKE_SOURCE_DIR}/Core/Src
   ${CMAKE_SOURCE_DIR}/Core/Inc
 )
 
@@ -68,6 +69,11 @@ target_link_options(Application PRIVATE
 if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/Drivers)
   add_subdirectory(${CMAKE_SOURCE_DIR}/Drivers)
   target_link_libraries(Application PRIVATE Drivers)
+endif()
+
+if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/tensorflow)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/tensorflow)
+  target_link_libraries(Application PRIVATE tensorflow)
 endif()
 
 if (EXISTS ${TOOLCHAIN_COPY})

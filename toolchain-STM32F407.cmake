@@ -28,14 +28,17 @@ add_compile_options(
   -funsigned-char
   -ffunction-sections
   -fdata-sections
+  -fno-rtti
+  -fno-exceptions
   -MMD
   -MP)
 
 add_compile_definitions(
   STM32F437xx
   USE_HAL_DRIVER
-  HAL_DRIVERS_ONLY
+#  HAL_DRIVERS_ONLY
   USE_FULL_ASSERT
+  CMSIS_NN
   $<$<CONFIG:DEBUG>:OS_USE_TRACE_SEMIHOSTING_STDOUT>
   $<$<CONFIG:DEBUG>:OS_USE_SEMIHOSTING>
 )
