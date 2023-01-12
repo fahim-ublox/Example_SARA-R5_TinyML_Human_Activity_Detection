@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
+
+#ifndef HAL_DRIVERS_ONLY
 #include "model_tflite_micro.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
@@ -68,6 +70,9 @@ void setup();
 // compatibility.
 void loop();
 
+void handle_output(tflite::ErrorReporter* error_reporter, float x_value, float y_value);
+#endif //# HAL_DRIVERS_ONLY
+
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -78,7 +83,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
-void handle_output(tflite::ErrorReporter* error_reporter, float x_value, float y_value);
 
 
 void systick_delay_ms(uint32_t ms)
@@ -122,6 +126,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
 
+#ifndef HAL_DRIVERS_ONLY
   /* Infinite loop */
   setup();
   while (true)
@@ -129,14 +134,22 @@ int main(void)
 	loop();
 	systick_delay_ms(1000);
   }
+#else
+  unsigned char ch = 'F';
+  while (true)
+  {
+	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
+	systick_delay_ms(250);
+  }
+#endif // HAL_DRIVERS_ONLY
 }
-
+#ifndef HAL_DRIVERS_ONLY
 void HandleOutput(tflite::ErrorReporter* error_reporter, float x_value, float y_value)
 {
 	// Log the current X and Y values
 	TF_LITE_REPORT_ERROR(error_reporter, "x_value: %f, y_value: %f\n", x_value, y_value);
 }
-
+#endif // HAL_DRIVERS_ONLY
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -248,7 +261,7 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-
+#ifndef HAL_DRIVERS_ONLY
 // The name of this function is important for Arduino compatibility.
 void setup() {
   // Set up logging. Google style is to avoid globals or statics because of
@@ -329,7 +342,7 @@ void loop() {
   inference_count += 1;
   if (inference_count >= kInferencesPerCycle) inference_count = 0;
 }
-
+#endif // HAL_DRIVERS_ONLY
 
 #ifdef  USE_FULL_ASSERT
 /**
