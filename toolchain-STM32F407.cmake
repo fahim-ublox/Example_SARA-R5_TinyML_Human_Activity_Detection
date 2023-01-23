@@ -55,7 +55,7 @@ add_compile_definitions(
 
 add_link_options(
   ${ARM_OPTIONS}
-  -Wl,--wrap=malloc -Wl,--wrap=_malloc_r -Wl,--wrap=calloc -Wl,--wrap=_calloc_r -Wl,--wrap=realloc -Wl,--wrap=_realloc_r
+#  -Wl,--wrap=malloc -Wl,--wrap=_malloc_r -Wl,--wrap=calloc -Wl,--wrap=_calloc_r -Wl,--wrap=realloc -Wl,--wrap=_realloc_r
 #  $<$<CONFIG:DEBUG>:--specs=rdimon.specs>
 #  $<$<CONFIG:RELEASE>:--specs=nosys.specs>
   $<$<CONFIG:DEBUG>:-u_printf_float>
