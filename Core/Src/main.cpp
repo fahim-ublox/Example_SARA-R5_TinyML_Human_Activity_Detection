@@ -44,6 +44,7 @@ uint8_t tensor_arena[kTensorArenaSize];
 }  // namespace
 
 /* Private includes ----------------------------------------------------------*/
+const int c_stack_size_TinyML = 500;
 int const array_size = 16;
 
 
@@ -94,29 +95,6 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
 void StartDefaultTask(void const * argument);
 void StartTask02(void const * argument);
-
-
-//void systick_delay_ms(uint32_t ms)
-//{
-//  uint32_t index;
-//
-//  // Ensure 24 bit value
-//  SysTick->LOAD = 168000 & 0xFFFFFF;
-//
-//  // Set Clock to Processor clock
-//  SysTick->CTRL |= (1u<<2);
-//  // Enable systick
-//  SysTick->CTRL |= (1u);
-//
-//  for(index=0; index<ms; index++)
-//  {
-//    while(!(SysTick->CTRL &  (1u<<16)))
-//    {
-//    }
-//  }
-//  // Disable systick
-//  SysTick->CTRL &= ~(1u);
-//}
 
 #ifndef HAL_DRIVERS_ONLY
 void HandleOutput(tflite::ErrorReporter* error_reporter, float x_value, float y_value)
@@ -199,7 +177,7 @@ int main(void)
   Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
   /* definition and creation of Task2 */
-  osThreadDef(Task2, StartTask02, osPriorityNormal, 0, 2000);
+  osThreadDef(Task2, StartTask02, osPriorityNormal, 0, c_stack_size_TinyML);
   Task2Handle = osThreadCreate(osThread(Task2), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -412,6 +390,7 @@ void StartDefaultTask(void const * argument)
 void StartTask02(void const * argument)
 {
   unsigned char ch='>';
+  UBaseType_t uxHighWaterMark;
   /* USER CODE BEGIN StartTask02 */
   /* Infinite loop */
   for(;;)
@@ -420,6 +399,9 @@ void StartTask02(void const * argument)
 	osDelay(1000);
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 	loop();
+	/* Inspect our own high water mark on entering the task. */
+	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+	printf("MAX_Stack_SZ:%ld, uxHighWaterMark:%ld\n",c_stack_size_TinyML, uxHighWaterMark);
   }
   /* USER CODE END StartTask02 */
 }
