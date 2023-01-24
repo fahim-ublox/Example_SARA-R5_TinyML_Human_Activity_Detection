@@ -48,7 +48,7 @@ include(${UBXLIB_BASE}/port/ubxlib.cmake)
 
 message(STATUS "Including /port/ubxlib.cmake")
 
-set(PLATFORM_PATH ${UBXLIB_BASE}/port/platform/stm32cube)
+set(PLATFORM_PATH ${CMAKE_SOURCE_DIR}/ubxlib_STM32_Port)
 set(FREERTOS_PATH  ${CMAKE_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS)
 set(MBEDTLS_PATH ${CMAKE_SOURCE_DIR}/mbedTLS)
 
@@ -61,7 +61,7 @@ set (UBXLIB_SRC_PLATFORM
 	${PLATFORM_PATH}/src/u_port_os.c 
 	${PLATFORM_PATH}/src/u_port_private.c 
 	${PLATFORM_PATH}/src/u_port_uart.c 
-	${PLATFORM_PATH}/src/u_port_i2c.c 
+	#${PLATFORM_PATH}/src/u_port_i2c.c
 	${PLATFORM_PATH}/src/u_port.c 
 	${UBXLIB_BASE}/port/platform/common/heap_check/u_heap_check.c 
 	#${PLATFORM_PATH}/src/heap_useNewlib.c
@@ -76,6 +76,7 @@ set (UBXLIB_INC_PLATFORM
 	${PLATFORM_PATH}/mcu/stm32f4/cfg
 	${UBXLIB_BASE}/port/platform/common/heap_check
 	${UBXLIB_BASE}/port/platform/common/debug_utils/api
+	${UBXLIB_BASE}/port/platform/common/runner
 	${PLATFORM_PATH}
 	${UBXLIB_BASE}/common/error/api
 	${UBXLIB_BASE}/common/device/api
@@ -96,6 +97,8 @@ set (UBXLIB_INC_PLATFORM
 	${UBXLIB_BASE}/port/api
 	${UBXLIB_BASE}/wifi/api
 	${UBXLIB_BASE}/cfg
+	${UBXLIB_BASE}
+	${UBXLIB_BASE}/port/platform/stm32cube/mcu/stm32f4/cfg
 	) 
 
 # mbedTLS

@@ -389,7 +389,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  unsigned char ch='*';
+  unsigned char ch='-';
   /* Infinite loop */
   //setup();
   while (true)
@@ -412,14 +412,15 @@ void StartDefaultTask(void const * argument)
 /* USER CODE END Header_StartTask02 */
 void StartTask02(void const * argument)
 {
-  unsigned char ch='-';
-
+  unsigned char ch='>';
   /* USER CODE BEGIN StartTask02 */
   /* Infinite loop */
   for(;;)
   {
+	//
+	osDelay(1000);
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
-    osDelay(1000);
+	loop();
   }
   /* USER CODE END StartTask02 */
 }
