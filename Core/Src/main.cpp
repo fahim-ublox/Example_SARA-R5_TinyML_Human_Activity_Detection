@@ -195,7 +195,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of Task1 */
-  osThreadDef(Task1, StartDefaultTask, osPriorityNormal, 0, 2000);
+  osThreadDef(Task1, StartDefaultTask, osPriorityNormal, 0, 128);
   Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
   /* definition and creation of Task2 */
@@ -395,8 +395,7 @@ void StartDefaultTask(void const * argument)
   while (true)
   {
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
-	osDelay(1000);
-	loop();
+	osDelay(100);
   }
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
