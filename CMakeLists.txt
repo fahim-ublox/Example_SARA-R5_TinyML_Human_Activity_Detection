@@ -33,82 +33,85 @@ add_compile_definitions(
   $<$<BOOL:${USE_RTOS}>:RTOS>
 )
 
-#if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/ubxlib)
-#set(UBXLIB_BASE ${CMAKE_SOURCE_DIR}/ubxlib)
-## Set the ubxlib features to compile (all needs to be enabled at the moment)
-#set(UBXLIB_FEATURES short_range cell gnss)
-#
-## From this line we will get back:
-## - UBXLIB_SRC
-## - UBXLIB_INC
-## - UBXLIB_PRIVATE_INC
-## - UBXLIB_TEST_SRC
-## - UBXLIB_TEST_INC
-#include(${UBXLIB_BASE}/port/ubxlib.cmake)
-#
-#message(STATUS "Including /port/ubxlib.cmake")
-#
-#set(PLATFORM_PATH ${UBXLIB_BASE}/port/platform/stm32cube)
+if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/ubxlib)
+set(UBXLIB_BASE ${CMAKE_SOURCE_DIR}/ubxlib)
+# Set the ubxlib features to compile (all needs to be enabled at the moment)
+set(UBXLIB_FEATURES short_range cell gnss)
+
+# From this line we will get back:
+# - UBXLIB_SRC
+# - UBXLIB_INC
+# - UBXLIB_PRIVATE_INC
+# - UBXLIB_TEST_SRC
+# - UBXLIB_TEST_INC
+include(${UBXLIB_BASE}/port/ubxlib.cmake)
+
+message(STATUS "Including /port/ubxlib.cmake")
+
+set(PLATFORM_PATH ${CMAKE_SOURCE_DIR}/ubxlib_STM32_Port)
 set(FREERTOS_PATH  ${CMAKE_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS)
 set(MBEDTLS_PATH ${CMAKE_SOURCE_DIR}/mbedTLS)
 
-## Ubxlib port
-#set (UBXLIB_SRC_PLATFORM 
-#	${UBXLIB_BASE}/port/clib/u_port_clib_mktime64.c  
-#	${UBXLIB_BASE}/port/platform/common/mbedtls/u_port_crypto.c 
-#	${PLATFORM_PATH}/src/u_port_debug.c 
-#	${PLATFORM_PATH}/src/u_port_gpio.c 
-#	${PLATFORM_PATH}/src/u_port_os.c 
-#	${PLATFORM_PATH}/src/u_port_private.c 
-#	${PLATFORM_PATH}/src/u_port_uart.c 
-#	${PLATFORM_PATH}/src/u_port_i2c.c 
-#	${PLATFORM_PATH}/src/u_port.c 
-#	${UBXLIB_BASE}/port/platform/common/heap_check/u_heap_check.c 
-#	${PLATFORM_PATH}/src/heap_useNewlib.c
-#	)
-#
-##set(UBXLIB_ASM ${PLATFORM_PATH}/src/startup_stm32f437vgtx.s)
-#
-#set (UBXLIB_INC_PLATFORM 
-#	${UBXLIB_PRIVATE_INC}
-#	${UBXLIB_BASE}/port/clib 
-#	${PLATFORM_PATH}/src 
-#	${PLATFORM_PATH}/mcu/stm32f4/cfg
-#	${UBXLIB_BASE}/port/platform/common/heap_check
-#	${UBXLIB_BASE}/port/platform/common/debug_utils/api
-#	${PLATFORM_PATH}
-#	${UBXLIB_BASE}/common/error/api
-#	${UBXLIB_BASE}/common/device/api
-#	${UBXLIB_BASE}/common/assert/api
-#	${UBXLIB_BASE}/common/location/api
-#	${UBXLIB_BASE}/common/at_client/api
-#	${UBXLIB_BASE}/common/security/api
-#	${UBXLIB_BASE}/common/sock/api
-#	${UBXLIB_BASE}/common/spartn/api
-#	${UBXLIB_BASE}/common/short_range/api
-#	${UBXLIB_BASE}/common/mqtt_client/api
-#	${UBXLIB_BASE}/common/network/api
-#	${UBXLIB_BASE}/common/utils/api
-#	${UBXLIB_BASE}/common/ubx_protocol/api
-#	${UBXLIB_BASE}/cell/api
-#	${UBXLIB_BASE}/gnss/api
-#	${UBXLIB_BASE}/ble/api
-#	${UBXLIB_BASE}/port/api
-#	${UBXLIB_BASE}/wifi/api
-#	${UBXLIB_BASE}/cfg
-#	) 
+# Ubxlib port
+set (UBXLIB_SRC_PLATFORM 
+	${UBXLIB_BASE}/port/clib/u_port_clib_mktime64.c  
+	${UBXLIB_BASE}/port/platform/common/mbedtls/u_port_crypto.c 
+	${PLATFORM_PATH}/src/u_port_debug.c 
+	${PLATFORM_PATH}/src/u_port_gpio.c 
+	${PLATFORM_PATH}/src/u_port_os.c 
+	${PLATFORM_PATH}/src/u_port_private.c 
+	${PLATFORM_PATH}/src/u_port_uart.c 
+	#${PLATFORM_PATH}/src/u_port_i2c.c 
+	${PLATFORM_PATH}/src/u_port.c 
+	${UBXLIB_BASE}/port/platform/common/heap_check/u_heap_check.c 
+	#${PLATFORM_PATH}/src/heap_useNewlib.c
+	)
 
-## mbedTLS
-#set(mbedTLS_FW_SRC
-#	${MBEDTLS_PATH}/library/sha256.c 
-#	${MBEDTLS_PATH}/library/md.c 
-#	${MBEDTLS_PATH}/library/md_wrap.c 
-#	${MBEDTLS_PATH}/library/md5.c 
-#	${MBEDTLS_PATH}/library/aes.c 
-#	${MBEDTLS_PATH}/library/platform_util.c
-#	)
-#
-#set(mbedTLS_FW_INC ${MBEDTLS_PATH}/include)
+#set(UBXLIB_ASM ${PLATFORM_PATH}/src/startup_stm32f437vgtx.s)
+
+set (UBXLIB_INC_PLATFORM 
+	${UBXLIB_PRIVATE_INC}
+	${UBXLIB_BASE}/port/clib 
+	${PLATFORM_PATH}/src 
+	${PLATFORM_PATH}/mcu/stm32f4/cfg
+	${UBXLIB_BASE}/port/platform/common/heap_check
+	${UBXLIB_BASE}/port/platform/common/debug_utils/api
+	${UBXLIB_BASE}/port/platform/common/runner
+	${PLATFORM_PATH}
+	${UBXLIB_BASE}/common/error/api
+	${UBXLIB_BASE}/common/device/api
+	${UBXLIB_BASE}/common/assert/api
+	${UBXLIB_BASE}/common/location/api
+	${UBXLIB_BASE}/common/at_client/api
+	${UBXLIB_BASE}/common/security/api
+	${UBXLIB_BASE}/common/sock/api
+	${UBXLIB_BASE}/common/spartn/api
+	${UBXLIB_BASE}/common/short_range/api
+	${UBXLIB_BASE}/common/mqtt_client/api
+	${UBXLIB_BASE}/common/network/api
+	${UBXLIB_BASE}/common/utils/api
+	${UBXLIB_BASE}/common/ubx_protocol/api
+	${UBXLIB_BASE}/cell/api
+	${UBXLIB_BASE}/gnss/api
+	${UBXLIB_BASE}/ble/api
+	${UBXLIB_BASE}/port/api
+	${UBXLIB_BASE}/wifi/api
+	${UBXLIB_BASE}/cfg
+	${UBXLIB_BASE}
+	${UBXLIB_BASE}/port/platform/stm32cube/mcu/stm32f4/cfg
+	) 
+
+# mbedTLS
+set(mbedTLS_FW_SRC
+	${MBEDTLS_PATH}/library/sha256.c 
+	${MBEDTLS_PATH}/library/md.c 
+	${MBEDTLS_PATH}/library/md_wrap.c 
+	${MBEDTLS_PATH}/library/md5.c 
+	${MBEDTLS_PATH}/library/aes.c 
+	${MBEDTLS_PATH}/library/platform_util.c
+	)
+
+set(mbedTLS_FW_INC ${MBEDTLS_PATH}/include)
 
 # FreeRTOS
 set(FreeRTOS_FW_SRC
@@ -129,7 +132,7 @@ set(FreeRTOS_FW_INC
 	${FREERTOS_PATH}/Source/portable/GCC/ARM_CM4F 
 	${FREERTOS_PATH}/Source/CMSIS_RTOS
 	)
-#endif()
+endif()
 
 add_executable(Application 
     ${CMAKE_SOURCE_DIR}/Core/Src/main.cpp
