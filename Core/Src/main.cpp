@@ -42,9 +42,64 @@
 #define MY_SERVER_NAME "ubxlib.redirectme.net"
 #define MY_SERVER_PORT 5055
 
-static const uDeviceCfg_t gDeviceCfg = { U_DEVICE_TYPE_NONE};
-static const uNetworkCfgCell_t gNetworkCfg = {U_NETWORK_TYPE_NONE};
-static const uNetworkType_t gNetType = U_NETWORK_TYPE_CELL;
+//static const uDeviceCfg_t gDeviceCfg = { U_DEVICE_TYPE_NONE};
+//static const uNetworkCfgCell_t gNetworkCfg = {U_NETWORK_TYPE_NONE};
+//static const uNetworkType_t gNetType = U_NETWORK_TYPE_CELL;
+// Cellular configuration.
+// Set U_CFG_TEST_CELL_MODULE_TYPE to your module type,
+// chosen from the values in cell/api/u_cell_module_type.h
+//
+// Note that the pin numbers are those of the MCU: if you
+// are using an MCU inside a u-blox module the IO pin numbering
+// for the module is likely different that from the MCU: check
+// the data sheet for the module to determine the mapping.
+
+// DEVICE i.e. module/chip configuration: in this case a cellular
+// module connected via UART
+static const uDeviceCfg_t gDeviceCfg = {
+		0, U_DEVICE_TYPE_CELL,
+		{
+        	{
+        		0,
+            	0,//U_CFG_TEST_CELL_MODULE_TYPE,
+            	NULL, /* SIM pin */
+            	U_CFG_APP_PIN_CELL_ENABLE_POWER,
+            	U_CFG_APP_PIN_CELL_PWR_ON,
+            	U_CFG_APP_PIN_CELL_VINT,
+            	U_CFG_APP_PIN_CELL_DTR
+        	},
+		},
+		U_DEVICE_TRANSPORT_TYPE_UART,
+    	{
+        	{
+        		0,
+            	U_CFG_APP_CELL_UART,
+            	U_CELL_UART_BAUD_RATE,
+            	U_CFG_APP_PIN_CELL_TXD,
+            	U_CFG_APP_PIN_CELL_RXD,
+            	U_CFG_APP_PIN_CELL_CTS,
+            	U_CFG_APP_PIN_CELL_RTS
+        	},
+    	},
+};
+// NETWORK configuration for cellular
+static const uNetworkCfgCell_t gNetworkCfg = {
+    	0,
+		U_NETWORK_TYPE_CELL,
+    	NULL, /* APN: NULL to accept default.  If using a Thingstream SIM enter "tsiot" here */
+    	240 /* Connection timeout in seconds */
+    // There is an additional field here "pKeepGoingCallback",
+    // which we do NOT set, we allow the compiler to set it to 0
+    // and all will be fine. You may set the field to a function
+    // of the form "bool keepGoingCallback(uDeviceHandle_t devHandle)",
+    // e.g.:
+    // .pKeepGoingCallback = keepGoingCallback
+    // ...and your function will be called periodically during an
+    // abortable network operation such as connect/disconnect;
+    // if it returns true the operation will continue else it
+    // will be aborted, allowing you immediate control.  If this
+    // field is set, timeoutSeconds will be ignored.
+};
 #endif //NO_UBX_LIB_PRESENT
 
 // Globals, used for compatibility with Arduino-style sketches.
@@ -396,6 +451,13 @@ void StartDefaultTask(void const * argument)
 
   returnCode = uDeviceOpen(&gDeviceCfg, &devHandle);
   uPortLog("Opened device with return code %d.\n", returnCode);
+
+  uPortLog("U_CFG_APP_CELL_UART:%d, U_CELL_UART_BAUD_RATE:%d, U_CFG_APP_PIN_CELL_TXD:%d, U_CFG_APP_PIN_CELL_RXD:%d, U_CFG_APP_PIN_CELL_CTS:%d, U_CFG_APP_PIN_CELL_RTS:%d,\n", U_CFG_APP_CELL_UART,
+      	U_CELL_UART_BAUD_RATE,
+      	U_CFG_APP_PIN_CELL_TXD,
+      	U_CFG_APP_PIN_CELL_RXD,
+      	U_CFG_APP_PIN_CELL_CTS,
+      	U_CFG_APP_PIN_CELL_RTS);
 #endif //NO_UBX_LIB_PRESENT
   /* Infinite loop */
   while (true)
