@@ -61,7 +61,7 @@ set (UBXLIB_SRC_PLATFORM
 	${PLATFORM_PATH}/src/u_port_os.c 
 	${PLATFORM_PATH}/src/u_port_private.c 
 	${PLATFORM_PATH}/src/u_port_uart.c 
-	#${PLATFORM_PATH}/src/u_port_i2c.c
+	${PLATFORM_PATH}/src/u_port_i2c.c
 	${PLATFORM_PATH}/src/u_port.c 
 	${UBXLIB_BASE}/port/platform/common/heap_check/u_heap_check.c 
 	#${PLATFORM_PATH}/src/heap_useNewlib.c

@@ -21,6 +21,13 @@
 #include "string.h"
 #include "cmsis_os.h"
 
+#ifndef NO_UBX_LIB_PRESENT
+// Bring in all of the ubxlib public header files
+#include "ubxlib.h"
+// Bring in the application settings
+#include "u_cfg_app_platform_specific.h"
+#endif //NO_UBX_LIB_PRESENT
+
 #ifndef HAL_DRIVERS_ONLY
 #include "model_tflite_micro.h"
 #include "tensorflow/lite/micro/all_ops_resolver.h"
@@ -28,6 +35,17 @@
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
+
+
+#ifndef NO_UBX_LIB_PRESENT
+// Echo server URL and port number
+#define MY_SERVER_NAME "ubxlib.redirectme.net"
+#define MY_SERVER_PORT 5055
+
+static const uDeviceCfg_t gDeviceCfg = { U_DEVICE_TYPE_NONE};
+static const uNetworkCfgCell_t gNetworkCfg = {U_NETWORK_TYPE_NONE};
+static const uNetworkType_t gNetType = U_NETWORK_TYPE_CELL;
+#endif //NO_UBX_LIB_PRESENT
 
 // Globals, used for compatibility with Arduino-style sketches.
 // Globals, used for compatibility with Arduino-style sketches.
@@ -368,8 +386,18 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   unsigned char ch='-';
+
+#ifndef NO_UBX_LIB_PRESENT
+  uDeviceHandle_t devHandle = NULL;
+  int32_t returnCode;
+
+  uPortInit();
+  uDeviceInit();
+
+  returnCode = uDeviceOpen(&gDeviceCfg, &devHandle);
+  uPortLog("Opened device with return code %d.\n", returnCode);
+#endif //NO_UBX_LIB_PRESENT
   /* Infinite loop */
-  //setup();
   while (true)
   {
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);

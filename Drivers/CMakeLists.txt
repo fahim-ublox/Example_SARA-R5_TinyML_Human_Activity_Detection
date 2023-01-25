@@ -20,6 +20,9 @@ add_library(Drivers OBJECT
 	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c
 	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c
 	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c
+	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_gpio.c
+	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usart.c
+	${PROJECT_SOURCE_DIR}/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_rcc.c
 )
 
 target_include_directories(Drivers INTERFACE
