@@ -98,6 +98,10 @@
  * COMPILE-TIME MACROS FOR A CELLULAR MODULE ON STM32F4: UART/USART
  * -------------------------------------------------------------- */
 
+#ifndef U_CFG_CELL_DISABLE_UART_POWER_SAVING
+# define U_CFG_CELL_DISABLE_UART_POWER_SAVING     1
+#endif
+
 #ifndef U_CFG_APP_CELL_UART
 /** The UART/USART to use when talking to the cellular module,
  * a number between 1 and 8, though note that only USARTs 1, 2, 3
@@ -111,7 +115,7 @@
  * below (see table 12 of the STM32F437VG data sheet).
  * For a C030-U201 board this HAS to be 2 for the same reasons.
  */
-# define U_CFG_APP_CELL_UART                           1
+# define U_CFG_APP_CELL_UART                          1 // 3
 #endif
 
 /* ----------------------------------------------------------------
@@ -187,6 +191,7 @@
  * 0x35, AKA PD_5.
  */
 # define U_CFG_APP_PIN_CELL_TXD       0x09 // AKA PA_9
+//# define U_CFG_APP_PIN_CELL_TXD       0x38  // PD_8  = 0x38
 #endif
 
 #ifndef U_CFG_APP_PIN_CELL_RXD
@@ -198,6 +203,7 @@
  * 0x36, AKA PD_6.
  */
 # define U_CFG_APP_PIN_CELL_RXD       0x0a // AKA PA_10
+//# define U_CFG_APP_PIN_CELL_RXD       0x39 // PD_9  = 0x39
 #endif
 
 #ifndef U_CFG_APP_PIN_CELL_CTS
@@ -210,6 +216,7 @@
  * 0x33, AKA PD_3.
  */
 # define U_CFG_APP_PIN_CELL_CTS       0x0b // AKA PA_11
+//# define U_CFG_APP_PIN_CELL_CTS       0x3B // PD_11 = 0x3B,
 #endif
 
 #ifndef U_CFG_APP_PIN_CELL_RTS
@@ -222,6 +229,7 @@
  * 0x34, AKA PD_4.
  */
 # define U_CFG_APP_PIN_CELL_RTS       0x0c // AKA PA_12
+//# define U_CFG_APP_PIN_CELL_RTS       0x1E // PB_14 = 0x1E
 #endif
 
 /** Macro to return the CTS pin for cellular: on some

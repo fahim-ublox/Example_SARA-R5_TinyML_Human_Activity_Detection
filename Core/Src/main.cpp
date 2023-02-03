@@ -27,6 +27,8 @@
 // Bring in the application settings
 #include "u_cfg_app_platform_specific.h"
 #endif //NO_UBX_LIB_PRESENT
+#include "u_at_client.h"
+#include "u_cell_private.h"
 
 #ifndef HAL_DRIVERS_ONLY
 #include "model_tflite_micro.h"
@@ -62,7 +64,8 @@ static const uDeviceCfg_t gDeviceCfg = {
         	{
         		0,
             	0,//U_CFG_TEST_CELL_MODULE_TYPE,
-            	NULL, /* SIM pin */
+            	//"1234", /* SIM pin */
+		NULL, /* SIM pin */
             	U_CFG_APP_PIN_CELL_ENABLE_POWER,
             	U_CFG_APP_PIN_CELL_PWR_ON,
             	U_CFG_APP_PIN_CELL_VINT,
@@ -216,7 +219,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
@@ -228,9 +230,7 @@ int main(void)
   /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
-  /* definition and creation of myBinarySem01 */
-  osSemaphoreDef(myBinarySem01);
-  myBinarySem01Handle = osSemaphoreCreate(osSemaphore(myBinarySem01), 1);
+  myBinarySem01Handle = xSemaphoreCreateBinary();
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -246,7 +246,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of Task1 */
-  osThreadDef(Task1, StartDefaultTask, osPriorityNormal, 0, 128);
+  osThreadDef(Task1, StartDefaultTask, osPriorityNormal, 0, c_stack_size_TinyML);
   Task1Handle = osThreadCreate(osThread(Task1), NULL);
 
   /* definition and creation of Task2 */
@@ -313,38 +313,6 @@ void SystemClock_Config(void)
   }
 }
 
-/**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
 
 /**
   * @brief USART2 Initialization Function
@@ -441,24 +409,65 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void const * argument)
 {
   unsigned char ch='-';
+  UBaseType_t uxHighWaterMark;
+  uPortGpioConfig_t gpioConfig = U_PORT_GPIO_CONFIG_DEFAULT;
 
-#ifndef NO_UBX_LIB_PRESENT
+
   uDeviceHandle_t devHandle = NULL;
   int32_t returnCode;
+  uCellPrivateInstance_t *pInstance;
+  uAtClientHandle_t atHandle;
+
+  uPortLog("StartDefaultTask called\n");
 
   uPortInit();
+
+  // Enable power to 3V3 rail for the C030 board
+  gpioConfig.pin = U_CFG_APP_PIN_C030_ENABLE_3V3;
+  gpioConfig.driveMode = U_PORT_GPIO_DRIVE_MODE_OPEN_DRAIN;
+  gpioConfig.direction = U_PORT_GPIO_DIRECTION_OUTPUT;
+  uPortGpioConfig(&gpioConfig);
+  uPortGpioSet(U_CFG_APP_PIN_C030_ENABLE_3V3, 1);
+
+
+  // Make sure the PWR_ON pin is initially high
+  // BEFORE taking the module out of reset: this
+  // ensures that it powers on from reset which
+  // permits FW update on SARA-R5
+  uPortGpioSet(U_CFG_APP_PIN_CELL_PWR_ON, 1);
+  gpioConfig.direction = U_PORT_GPIO_DIRECTION_OUTPUT;
+  gpioConfig.driveMode = U_PORT_GPIO_DRIVE_MODE_NORMAL;
+  gpioConfig.pin = U_CFG_APP_PIN_CELL_PWR_ON;
+  uPortGpioConfig(&gpioConfig);
+  uPortGpioSet(U_CFG_APP_PIN_CELL_PWR_ON, 1);
+
+  // Set reset high (i.e. not reset) if it is connected
+  gpioConfig.pin = U_CFG_APP_PIN_CELL_RESET;
+  gpioConfig.driveMode = U_PORT_GPIO_DRIVE_MODE_NORMAL;
+  gpioConfig.direction = U_PORT_GPIO_DIRECTION_OUTPUT;
+  uPortGpioConfig(&gpioConfig);
+  uPortGpioSet(U_CFG_APP_PIN_CELL_RESET, 1);
+
+  osDelay(100);
+
   uDeviceInit();
 
   returnCode = uDeviceOpen(&gDeviceCfg, &devHandle);
   uPortLog("Opened device with return code %d.\n", returnCode);
 
-  uPortLog("U_CFG_APP_CELL_UART:%d, U_CELL_UART_BAUD_RATE:%d, U_CFG_APP_PIN_CELL_TXD:%d, U_CFG_APP_PIN_CELL_RXD:%d, U_CFG_APP_PIN_CELL_CTS:%d, U_CFG_APP_PIN_CELL_RTS:%d,\n", U_CFG_APP_CELL_UART,
-      	U_CELL_UART_BAUD_RATE,
-      	U_CFG_APP_PIN_CELL_TXD,
-      	U_CFG_APP_PIN_CELL_RXD,
-      	U_CFG_APP_PIN_CELL_CTS,
-      	U_CFG_APP_PIN_CELL_RTS);
-#endif //NO_UBX_LIB_PRESENT
+  pInstance = pUCellPrivateGetInstance(devHandle);
+  atHandle = pInstance->atHandle;
+
+  /* Inspect our own high water mark on entering the task. */
+  uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+  printf("StartDefaultTask:: MAX_Stack_SZ:%d, uxHighWaterMark:%ld\n", c_stack_size_TinyML, uxHighWaterMark);
+
+  uAtClientLock(atHandle);
+  uAtClientCommandStart(atHandle, "AT");
+  uAtClientCommandStopReadResponse(atHandle);
+  uAtClientUnlock(atHandle);
+
+  xSemaphoreGive( myBinarySem01Handle);
   /* Infinite loop */
   while (true)
   {
@@ -483,6 +492,9 @@ void StartTask02(void const * argument)
   UBaseType_t uxHighWaterMark;
   /* USER CODE BEGIN StartTask02 */
   /* Infinite loop */
+
+  xSemaphoreTake( myBinarySem01Handle, 0xFFFF );
+
   for(;;)
   {
 	//
@@ -491,7 +503,7 @@ void StartTask02(void const * argument)
 	loop();
 	/* Inspect our own high water mark on entering the task. */
 	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-	printf("MAX_Stack_SZ:%ld, uxHighWaterMark:%ld\n",c_stack_size_TinyML, uxHighWaterMark);
+	//printf("MAX_Stack_SZ:%ld, uxHighWaterMark:%ld\n",c_stack_size_TinyML, uxHighWaterMark);
   }
   /* USER CODE END StartTask02 */
 }

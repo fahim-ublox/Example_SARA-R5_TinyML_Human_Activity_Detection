@@ -190,6 +190,8 @@ int32_t uPortGetTickTimeMs()
 {
     int32_t tickTime = 0;
 
+    //printf("uPortGetTickTimeMs %d\n", gInitialised);
+
     if (gInitialised) {
         tickTime = uPortPrivateGetTickTimeMs();
     }

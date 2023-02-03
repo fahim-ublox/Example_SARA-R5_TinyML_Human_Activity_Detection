@@ -421,7 +421,8 @@ int32_t uPortPrivateTimerDelete(uPortTimerHandle_t handle)
 // Get the current tick converted to a time in milliseconds.
 int64_t uPortPrivateGetTickTimeMs()
 {
-    return gTickTimerRtosCount;
+    //return gTickTimerRtosCount;
+	return  xTaskGetTickCount();
 }
 
 /* ----------------------------------------------------------------
