@@ -6,16 +6,26 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 u-blox
+  * Copyright (c) 2023 u-blox
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "string.h"
@@ -44,9 +54,6 @@
 #define MY_SERVER_NAME "ubxlib.redirectme.net"
 #define MY_SERVER_PORT 5055
 
-//static const uDeviceCfg_t gDeviceCfg = { U_DEVICE_TYPE_NONE};
-//static const uNetworkCfgCell_t gNetworkCfg = {U_NETWORK_TYPE_NONE};
-//static const uNetworkType_t gNetType = U_NETWORK_TYPE_CELL;
 // Cellular configuration.
 // Set U_CFG_TEST_CELL_MODULE_TYPE to your module type,
 // chosen from the values in cell/api/u_cell_module_type.h
@@ -61,34 +68,34 @@
 static const uDeviceCfg_t gDeviceCfg = {
 		0, U_DEVICE_TYPE_CELL,
 		{
-        	{
-        		0,
-            	0,//U_CFG_TEST_CELL_MODULE_TYPE,
-            	//"1234", /* SIM pin */
-		NULL, /* SIM pin */
-            	U_CFG_APP_PIN_CELL_ENABLE_POWER,
-            	U_CFG_APP_PIN_CELL_PWR_ON,
-            	U_CFG_APP_PIN_CELL_VINT,
-            	U_CFG_APP_PIN_CELL_DTR
-        	},
+		  {
+		    0,
+		    0,//U_CFG_TEST_CELL_MODULE_TYPE,
+		    //"1234", /* SIM pin */
+		    NULL, /* SIM pin */
+		    U_CFG_APP_PIN_CELL_ENABLE_POWER,
+		    U_CFG_APP_PIN_CELL_PWR_ON,
+		    U_CFG_APP_PIN_CELL_VINT,
+		    U_CFG_APP_PIN_CELL_DTR
+		  },
 		},
 		U_DEVICE_TRANSPORT_TYPE_UART,
-    	{
-        	{
-        		0,
-            	U_CFG_APP_CELL_UART,
-            	U_CELL_UART_BAUD_RATE,
-            	U_CFG_APP_PIN_CELL_TXD,
-            	U_CFG_APP_PIN_CELL_RXD,
-            	U_CFG_APP_PIN_CELL_CTS,
-            	U_CFG_APP_PIN_CELL_RTS
-        	},
-    	},
-};
+    		{
+		  {
+		  0,
+		  U_CFG_APP_CELL_UART,
+		  U_CELL_UART_BAUD_RATE,
+		  U_CFG_APP_PIN_CELL_TXD,
+		  U_CFG_APP_PIN_CELL_RXD,
+		  U_CFG_APP_PIN_CELL_CTS,
+		  U_CFG_APP_PIN_CELL_RTS
+		  },
+	    },
+    	};
 // NETWORK configuration for cellular
 static const uNetworkCfgCell_t gNetworkCfg = {
     	0,
-		U_NETWORK_TYPE_CELL,
+	U_NETWORK_TYPE_CELL,
     	NULL, /* APN: NULL to accept default.  If using a Thingstream SIM enter "tsiot" here */
     	240 /* Connection timeout in seconds */
     // There is an additional field here "pKeepGoingCallback",
@@ -159,9 +166,6 @@ UART_HandleTypeDef huart6;
 osThreadId Task1Handle;
 osThreadId Task2Handle;
 osSemaphoreId myBinarySem01Handle;
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -180,16 +184,6 @@ void HandleOutput(tflite::ErrorReporter* error_reporter, float x_value, float y_
 }
 #endif // HAL_DRIVERS_ONLY
 
-
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 /**
   * @brief  The application entry point.
   * @retval int
@@ -197,52 +191,20 @@ void HandleOutput(tflite::ErrorReporter* error_reporter, float x_value, float y_
 int main(void)
 {
   setup();
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
 
   /* Create the semaphores(s) */
   myBinarySem01Handle = xSemaphoreCreateBinary();
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
   /* definition and creation of Task1 */
@@ -253,23 +215,15 @@ int main(void)
   osThreadDef(Task2, StartTask02, osPriorityNormal, 0, c_stack_size_TinyML);
   Task2Handle = osThreadCreate(osThread(Task2), NULL);
 
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   }
-  /* USER CODE END 3 */
 }
 
 /**
@@ -321,14 +275,6 @@ void SystemClock_Config(void)
   */
 static void MX_USART2_UART_Init(void)
 {
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -341,9 +287,6 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -354,14 +297,6 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_USART6_UART_Init(void)
 {
-
-  /* USER CODE BEGIN USART6_Init 0 */
-
-  /* USER CODE END USART6_Init 0 */
-
-  /* USER CODE BEGIN USART6_Init 1 */
-
-  /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
   huart6.Init.BaudRate = 115200;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
@@ -374,10 +309,6 @@ static void MX_USART6_UART_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART6_Init 2 */
-
-  /* USER CODE END USART6_Init 2 */
-
 }
 
 /**
@@ -395,10 +326,6 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
   * @brief  Function implementing the Task1 thread.
@@ -411,7 +338,6 @@ void StartDefaultTask(void const * argument)
   unsigned char ch='-';
   UBaseType_t uxHighWaterMark;
   uPortGpioConfig_t gpioConfig = U_PORT_GPIO_CONFIG_DEFAULT;
-
 
   uDeviceHandle_t devHandle = NULL;
   int32_t returnCode;
@@ -474,9 +400,6 @@ void StartDefaultTask(void const * argument)
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 	osDelay(100);
   }
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartTask02 */
@@ -518,15 +441,9 @@ void StartTask02(void const * argument)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
   if (htim->Instance == TIM6) {
     HAL_IncTick();
   }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
 }
 
 /**
@@ -554,10 +471,7 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+
 }
 #endif /* USE_FULL_ASSERT */
 
