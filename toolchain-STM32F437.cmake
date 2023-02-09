@@ -12,6 +12,14 @@ set(CMAKE_SYSTEM_PROCESSOR arm)
 find_program(CROSS_GCC_PATH "arm-none-eabi-gcc.exe")
 get_filename_component(TOOLCHAIN ${CROSS_GCC_PATH} PATH)
 
+if("${TOOLCHAIN}" STREQUAL "")
+  # this branch will be taken
+  message("Please set Toolchain path")
+  set(TOOLCHAIN "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/bin")
+else()
+  message("Toolchain is set")
+endif()
+
 set(CMAKE_C_COMPILER ${TOOLCHAIN}/arm-none-eabi-gcc.exe)
 set(CMAKE_Cxx_COMPILER ${TOOLCHAIN}/arm-none-eabi-g++.exe)
 set(TOOLCHAIN_AS ${TOOLCHAIN}/arm-none-eabi-as.exe CACHE STRING "arm-none-eabi-as")
