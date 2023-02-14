@@ -12,6 +12,7 @@ set (TF_INC
 	  ${CMAKE_CURRENT_LIST_DIR}/../third_party/cmsis
 	  ${CMAKE_CURRENT_LIST_DIR}/../third_party/cmsis/CMSIS/NN/Include
 	  ${CMAKE_CURRENT_LIST_DIR}/../third_party/cmsis/CMSIS/DSP/Include
+	  ${CMAKE_CURRENT_LIST_DIR}/../third_party/cmsis/CMSIS/Core/Include
 )
 
 target_include_directories(tensorflow 
@@ -51,4 +52,4 @@ target_sources(tensorflow
   ${SRC}
 )
 
-target_link_libraries(tensorflow PRIVATE Drivers)
+target_link_libraries(tensorflow PRIVATE mcu_package)

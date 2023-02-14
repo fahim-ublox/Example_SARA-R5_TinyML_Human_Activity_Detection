@@ -49,8 +49,8 @@ include(${UBXLIB_BASE}/port/ubxlib.cmake)
 message(STATUS "Including /port/ubxlib.cmake")
 
 set(PLATFORM_PATH ${CMAKE_SOURCE_DIR}/ubxlib_STM32_Port)
-set(FREERTOS_PATH  ${CMAKE_SOURCE_DIR}/Middlewares/Third_Party/FreeRTOS)
-set(MBEDTLS_PATH ${CMAKE_SOURCE_DIR}/mbedTLS)
+set(FREERTOS_PATH  ${CMAKE_SOURCE_DIR}/STM32CubeF4/Middlewares/Third_Party/FreeRTOS)
+set(MBEDTLS_PATH ${CMAKE_SOURCE_DIR}/STM32CubeF4/Middlewares/Third_Party/mbedTLS)
 
 # Ubxlib port
 set (UBXLIB_SRC_PLATFORM 
@@ -62,6 +62,7 @@ set (UBXLIB_SRC_PLATFORM
 	${PLATFORM_PATH}/src/u_port_private.c 
 	${PLATFORM_PATH}/src/u_port_uart.c 
 	${PLATFORM_PATH}/src/u_port_i2c.c
+	${PLATFORM_PATH}/src/u_port_spi.c
 	${PLATFORM_PATH}/src/u_port.c 
 	${UBXLIB_BASE}/port/platform/common/heap_check/u_heap_check.c 
 	#${PLATFORM_PATH}/src/heap_useNewlib.c
@@ -91,6 +92,8 @@ set (UBXLIB_INC_PLATFORM
 	${UBXLIB_BASE}/common/network/api
 	${UBXLIB_BASE}/common/utils/api
 	${UBXLIB_BASE}/common/ubx_protocol/api
+	${UBXLIB_BASE}/common/type/api
+	${UBXLIB_BASE}/common/http_client/api
 	${UBXLIB_BASE}/cell/api
 	${UBXLIB_BASE}/gnss/api
 	${UBXLIB_BASE}/ble/api
@@ -174,9 +177,9 @@ target_link_options(Application PRIVATE
   LINKER:-Map,${CMAKE_CURRENT_BINARY_DIR}/Application.map
 )
 
-if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/Drivers)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/Drivers)
-  target_link_libraries(Application PRIVATE Drivers)
+if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/mcu_package)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/mcu_package)
+  target_link_libraries(Application PRIVATE mcu_package)
 endif()
 
 if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/tensorflow)
