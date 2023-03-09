@@ -148,7 +148,7 @@ add_executable(Application
     ${CMAKE_SOURCE_DIR}/Core/Src/sysmem.c
     ${CMAKE_SOURCE_DIR}/Core/Src/system_stm32f4xx.c
 	${CMAKE_SOURCE_DIR}/Core/Src/stm32f4xx_hal_timebase_tim.c
-    ${CMAKE_SOURCE_DIR}/Core/Startup/startup_stm32f437vgtx.s
+    ${CMAKE_SOURCE_DIR}/Core/Startup/startup_stm32f405rgtx.s
 	${UBXLIB_SRC} ${UBXLIB_SRC_PLATFORM} ${FreeRTOS_FW_SRC} ${mbedTLS_FW_SRC}
 )
 

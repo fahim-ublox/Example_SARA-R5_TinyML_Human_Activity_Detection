@@ -91,11 +91,15 @@ static uPortMutexHandle_t gMutex = NULL;
 static SPI_TypeDef *const gpSpiReg[] = {NULL,  // This to avoid having to -1
                                         SPI1,
                                         SPI2,
-                                        SPI3,
-                                        SPI4,
+                                        SPI3
+#if !defined (STM32F405xx)
+                                        ,
+										SPI4,
                                         SPI5,
                                         SPI6
+#endif //STM32F405xx
                                        };
+
 
 /** Storage for the SPI instances.
  */
@@ -140,6 +144,7 @@ static int32_t clockEnable(const SPI_TypeDef *pReg)
             __HAL_RCC_SPI3_CLK_ENABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
             break;
+#if !defined (STM32F405xx)
         case 4:
             __HAL_RCC_SPI4_CLK_ENABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
@@ -152,6 +157,8 @@ static int32_t clockEnable(const SPI_TypeDef *pReg)
             __HAL_RCC_SPI6_CLK_ENABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
             break;
+#endif //STM32F405xx
+
         default:
             break;
     }
@@ -178,6 +185,7 @@ static int32_t clockDisable(const SPI_TypeDef *pReg)
             __HAL_RCC_SPI3_CLK_DISABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
             break;
+#if !defined (STM32F405xx)
         case 4:
             __HAL_RCC_SPI4_CLK_DISABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
@@ -190,6 +198,7 @@ static int32_t clockDisable(const SPI_TypeDef *pReg)
             __HAL_RCC_SPI6_CLK_DISABLE();
             errorCodeOrSpi = (int32_t) U_ERROR_COMMON_SUCCESS;
             break;
+#endif //STM32F405xx
         default:
             break;
     }

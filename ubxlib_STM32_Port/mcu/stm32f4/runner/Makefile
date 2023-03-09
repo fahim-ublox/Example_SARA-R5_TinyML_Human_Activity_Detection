@@ -66,7 +66,7 @@ MBEDTLS_PATH = $(STM32CUBE_FW_PATH)/Middlewares/Third_Party/mbedTLS
 DEFINES += \
 	-DUSE_HAL_DRIVER \
 	-DUSE_FULL_LL_DRIVER \
-	-DSTM32F437xx \
+#	-DSTM32F437xx 
 	-DDEBUG \
 	-DMBEDTLS_USER_CONFIG_FILE=\"user_mbedtls_config.h\"
 
