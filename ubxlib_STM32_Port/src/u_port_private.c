@@ -118,9 +118,13 @@ static GPIO_TypeDef *const gpGpioReg[] = {GPIOA,
                                           GPIOF,
                                           GPIOG,
                                           GPIOH,
-                                          GPIOI,
-                                          GPIOJ,
+                                          GPIOI
+#if !defined (STM32F405xx)
+                                          ,
+										  GPIOJ,
                                           GPIOK
+#endif //STM32F405xx
+
                                          };
 
 // Get the LL driver peripheral number for a given GPIO port.
@@ -132,9 +136,13 @@ static const int32_t gLlApbGrpPeriphGpioPort[] = {LL_AHB1_GRP1_PERIPH_GPIOA,
                                                   LL_AHB1_GRP1_PERIPH_GPIOF,
                                                   LL_AHB1_GRP1_PERIPH_GPIOG,
                                                   LL_AHB1_GRP1_PERIPH_GPIOH,
-                                                  LL_AHB1_GRP1_PERIPH_GPIOI,
-                                                  LL_AHB1_GRP1_PERIPH_GPIOJ,
+                                                  LL_AHB1_GRP1_PERIPH_GPIOI
+#if !defined (STM32F405xx)
+                                                  ,
+												  LL_AHB1_GRP1_PERIPH_GPIOJ,
                                                   LL_AHB1_GRP1_PERIPH_GPIOK
+#endif //STM32F405xx
+
                                                  };
 
 /** Root of the linked list of timers.

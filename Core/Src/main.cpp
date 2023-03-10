@@ -30,6 +30,8 @@
 #include "main.h"
 #include "string.h"
 #include "cmsis_os.h"
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
 
 #ifndef NO_UBX_LIB_PRESENT
 // Bring in all of the ubxlib public header files
@@ -37,8 +39,6 @@
 // Bring in the application settings
 #include "u_cfg_app_platform_specific.h"
 #endif //NO_UBX_LIB_PRESENT
-#include "u_at_client.h"
-#include "u_cell_private.h"
 
 #ifndef HAL_DRIVERS_ONLY
 #include "model_tflite_micro.h"
@@ -51,7 +51,13 @@
 
 #ifndef NO_UBX_LIB_PRESENT
 // Echo server URL and port number
-#define MY_SERVER_NAME "ubxlib.redirectme.net"
+// HTTPS server URL: this is a test server that accepts PUT/POST
+// requests and GET/HEAD/DELETE requests on port 8081; there is
+// also an HTTP server on port 8080.
+#define MY_SERVER_NAME "ubxlib.redirectme.net:8081"
+
+// Some data to PUT and GET with the server.
+const char *gpMyData = "Hello world!";
 #define MY_SERVER_PORT 5055
 
 // Cellular configuration.
@@ -110,6 +116,8 @@ static const uNetworkCfgCell_t gNetworkCfg = {
     // will be aborted, allowing you immediate control.  If this
     // field is set, timeoutSeconds will be ignored.
 };
+
+static const uNetworkType_t gNetType = U_NETWORK_TYPE_CELL;
 #endif //NO_UBX_LIB_PRESENT
 
 // Globals, used for compatibility with Arduino-style sketches.
@@ -159,9 +167,7 @@ void handle_output(tflite::ErrorReporter* error_reporter, float x_value, float y
 #endif //# HAL_DRIVERS_ONLY
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart6;
+
 
 osThreadId Task1Handle;
 osThreadId Task2Handle;
@@ -170,9 +176,7 @@ osSemaphoreId myBinarySem01Handle;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USART6_UART_Init(void);
+
 void StartDefaultTask(void const * argument);
 void StartTask02(void const * argument);
 
@@ -190,8 +194,10 @@ void HandleOutput(tflite::ErrorReporter* error_reporter, float x_value, float y_
   */
 int main(void)
 {
+  const int length = 27;
+  char current_char = 'A';
+  char my_buffer[length];
   setup();
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -200,8 +206,17 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_USART6_UART_Init();
+  MX_USB_DEVICE_Init();
+
+  my_buffer[length-1] = '\n';
+  
+  for(int index=0; index < length-1; index++)
+  {
+    my_buffer[index] = current_char++;
+
+    CDC_Transmit_FS((uint8_t *)my_buffer, length);
+  }
+  /* USER CODE BEGIN 2 */
 
   /* Create the semaphores(s) */
   myBinarySem01Handle = xSemaphoreCreateBinary();
@@ -238,15 +253,19 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 192;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 6;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -256,56 +275,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
-}
-
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-}
-
-/**
-  * @brief USART6 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART6_UART_Init(void)
-{
-  huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
-  huart6.Init.Mode = UART_MODE_TX_RX;
-  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart6) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -318,12 +293,20 @@ static void MX_USART6_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin : PA15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -337,16 +320,26 @@ void StartDefaultTask(void const * argument)
 {
   unsigned char ch='-';
   UBaseType_t uxHighWaterMark;
+#ifndef NO_UBX_LIB_PRESENT
   uPortGpioConfig_t gpioConfig = U_PORT_GPIO_CONFIG_DEFAULT;
+  uHttpClientContext_t *pContext = NULL;
+  uHttpClientConnection_t connection = U_HTTP_CLIENT_CONNECTION_DEFAULT;
+  uSecurityTlsSettings_t tlsSettings = U_SECURITY_TLS_SETTINGS_DEFAULT;
+  char serialNumber[U_SECURITY_SERIAL_NUMBER_MAX_LENGTH_BYTES];
+  char path[U_SECURITY_SERIAL_NUMBER_MAX_LENGTH_BYTES + 10];
+  char buffer[32] = {0};
+  size_t size = sizeof(buffer);
+  int32_t statusCode = 0;
 
   uDeviceHandle_t devHandle = NULL;
   int32_t returnCode;
-  uCellPrivateInstance_t *pInstance;
-  uAtClientHandle_t atHandle;
 
   uPortLog("StartDefaultTask called\n");
 
   uPortInit();
+
+  uPortLog("uPortInit successfull\n");
+#if !defined (STM32F405xx)
 
   // Enable power to 3V3 rail for the C030 board
   gpioConfig.pin = U_CFG_APP_PIN_C030_ENABLE_3V3;
@@ -374,31 +367,114 @@ void StartDefaultTask(void const * argument)
   uPortGpioConfig(&gpioConfig);
   uPortGpioSet(U_CFG_APP_PIN_CELL_RESET, 1);
 
+#endif //STM32F405xx
+
   osDelay(100);
 
   uDeviceInit();
+  uPortLog("uDeviceInit successfull\n");
 
   returnCode = uDeviceOpen(&gDeviceCfg, &devHandle);
   uPortLog("Opened device with return code %d.\n", returnCode);
 
-  pInstance = pUCellPrivateGetInstance(devHandle);
-  atHandle = pInstance->atHandle;
-
+#endif //NO_UBX_LIB_PRESENT
   /* Inspect our own high water mark on entering the task. */
   uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
   printf("StartDefaultTask:: MAX_Stack_SZ:%d, uxHighWaterMark:%ld\n", c_stack_size_TinyML, uxHighWaterMark);
-
-  uAtClientLock(atHandle);
-  uAtClientCommandStart(atHandle, "AT");
-  uAtClientCommandStopReadResponse(atHandle);
-  uAtClientUnlock(atHandle);
-
+#ifndef NO_UBX_LIB_PRESENT
+  uCellPwrIsAlive(devHandle);
+#endif //NO_UBX_LIB_PRESENT
   xSemaphoreGive( myBinarySem01Handle);
+
+  // Bring up the network interface
+  uPortLog("Bringing up the network...\n");
+  if (uNetworkInterfaceUp(devHandle, gNetType,
+						  &gNetworkCfg) == 0) {
+
+
+      // Note: since devHandle is a cellular
+      // handle, any of the `cell` API calls could
+      // be made here using it.
+
+      // In order to create a unique path on the public
+      // server which won't collide with anyone else,
+      // we make the path the serial number of the
+      // module
+      uSecurityGetSerialNumber(devHandle, serialNumber);
+      snprintf(path, sizeof(path), "/%s.html", serialNumber);
+
+      // Set the URL of the server; each instance
+      // is associated with a single server -
+      // you may create more than one insance,
+      // for different servers, or close and
+      // open instances to access more than one
+      // server.  There are other settings in
+      // uHttpClientConnection_t, but for the
+      // purposes of this example they can be
+      // left at defaults
+      connection.pServerName = MY_SERVER_NAME;
+
+      // Create an HTTPS instance for the server; to
+      // create an HTTP instance instead you would
+      // replace &tlsSettings with NULL (and of
+      // course use port 8080 on the test HTTP server).
+      pContext = pUHttpClientOpen(devHandle, &connection, &tlsSettings);
+      if (pContext != NULL) {
+
+          // POST some data to the server; doesn't have to be text,
+          // can be anything, including binary data, though obviously
+          // you must give the appropriate content-type
+          statusCode = uHttpClientPostRequest(pContext, path, gpMyData, strlen(gpMyData),
+                                              "text/plain", NULL, NULL, NULL);
+          if (statusCode == 200) {
+
+              uPortLog("POST some data to the file \"%s\" on %s.\n", path, MY_SERVER_NAME);
+
+              // GET it back again
+              statusCode = uHttpClientGetRequest(pContext, path, buffer, &size, NULL);
+              if (statusCode == 200) {
+
+                  uPortLog("GET the data: it was \"%s\" (%d byte(s)).\n", buffer, size);
+
+              } else {
+                  uPortLog("Unable to GET file \"%s\" from %s; status code was %d!\n",
+                           path, MY_SERVER_NAME, statusCode);
+              }
+          } else {
+              uPortLog("Unable to POST file \"%s\" to %s; status code was %d!\n",
+                       path, MY_SERVER_NAME, statusCode);
+          }
+
+          // Close the HTTP instance again
+          uHttpClientClose(pContext);
+
+      } else {
+          uPortLog("Unable to create HTTP instance!\n");
+      }
+
+      // When finished with the network layer
+      uPortLog("Taking down network...\n");
+      uNetworkInterfaceDown(devHandle, gNetType);
+  } else {
+      uPortLog("Unable to bring up the network!\n");
+  }
+
+  // Close the device
+  // Note: we don't power the device down here in order
+  // to speed up testing; you may prefer to power it off
+  // by setting the second parameter to true.
+  uDeviceClose(devHandle, false);
+
+  // Tidy up
+  uDeviceDeinit();
+  uPortDeinit();
+
+  uPortLog("Done.\n");
   /* Infinite loop */
   while (true)
   {
-	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
-	osDelay(100);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_15);
+	HAL_Delay(100);
   }
 }
 
@@ -413,20 +489,18 @@ void StartTask02(void const * argument)
 {
   unsigned char ch='>';
   UBaseType_t uxHighWaterMark;
-  /* USER CODE BEGIN StartTask02 */
-  /* Infinite loop */
 
   xSemaphoreTake( myBinarySem01Handle, 0xFFFF );
-
+  /* USER CODE BEGIN StartTask02 */
+  /* Infinite loop */
   for(;;)
   {
-	//
-	osDelay(1000);
-	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
 	loop();
 	/* Inspect our own high water mark on entering the task. */
 	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-	//printf("MAX_Stack_SZ:%ld, uxHighWaterMark:%ld\n",c_stack_size_TinyML, uxHighWaterMark);
+	printf("MAX_Stack_SZ:%ld, uxHighWaterMark:%ld\n",c_stack_size_TinyML, uxHighWaterMark);
+
+	osDelay(1000);
   }
   /* USER CODE END StartTask02 */
 }

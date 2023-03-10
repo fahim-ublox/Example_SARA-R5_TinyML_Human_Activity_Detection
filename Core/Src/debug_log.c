@@ -17,17 +17,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "tensorflow/lite/micro/debug_log.h"
 #include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_uart.h"
+#include "usbd_cdc_if.h"
 #include <stdio.h>
 
 /* Extern Variables ---------------------------------------------------------*/
-extern UART_HandleTypeDef huart2; // Defined in main.cpp
-
 
 /* Function Definitions -----------------------------------------------------*/
 int __io_putchar(int ch)
 {
-	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 0xFFFF);
+    while(!(CDC_Transmit_FS((uint8_t*)&ch, 1) == USBD_BUSY));
+    HAL_Delay(1);
     return ch;
 }
 

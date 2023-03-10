@@ -177,9 +177,12 @@ static const uint32_t gLlApbGrpPeriphUart[] = {
     LL_APB1_GRP1_PERIPH_USART3,
     LL_APB1_GRP1_PERIPH_UART4,
     LL_APB1_GRP1_PERIPH_UART5,
-    LL_APB2_GRP1_PERIPH_USART6,
+    LL_APB2_GRP1_PERIPH_USART6
+#if !defined (STM32F405xx)
+	,
     LL_APB1_GRP1_PERIPH_UART7,
     LL_APB1_GRP1_PERIPH_UART8
+#endif //STM32F405xx
 };
 
 // Get the LL driver peripheral number for a given DMA engine.
@@ -381,7 +384,9 @@ static const uPortUartConstData_t gUartCfg[] = {{}, // This to avoid having to -
         U_CFG_HW_UART6_DMA_STREAM,
         U_CFG_HW_UART6_DMA_CHANNEL,
         USART6_IRQn
-    },
+    }
+#if !defined (STM32F405xx)
+,
     {
         UART7,
         U_CFG_HW_UART7_DMA_ENGINE,
@@ -396,6 +401,7 @@ static const uPortUartConstData_t gUartCfg[] = {{}, // This to avoid having to -
         U_CFG_HW_UART8_DMA_CHANNEL,
         UART8_IRQn
     }
+#endif //STM32F405xx
 };
 
 // Table to make it possible for UART interrupts to get to the UART data

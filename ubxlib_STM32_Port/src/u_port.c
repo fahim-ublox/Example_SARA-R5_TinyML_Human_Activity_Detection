@@ -40,7 +40,11 @@
 
 #include "FreeRTOS.h" // For xPortGetFreeHeapSize()
 #include "task.h"     // For taskENTER_CRITICAL()/taskEXIT_CRITICAL()
+#if !defined (STM32F405xx)
 #include "stm32f437xx.h"
+#else
+#include "stm32f405xx.h"
+#endif //STM32F405xx
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
@@ -66,7 +70,7 @@ static bool gInitialised = false;
 /* ----------------------------------------------------------------
  * STATIC FUNCTIONS
  * -------------------------------------------------------------- */
-
+#if defined (SYSTEM_CLOCK_UBXLIB)
 // System Clock Configuration
 static void systemClockConfig(void)
 {
@@ -102,16 +106,16 @@ static void systemClockConfig(void)
     }
 }
 
-//#ifdef USE_FULL_ASSERT
-//void assert_failed(uint8_t *pFile, uint32_t line)
-//{
-//    // printf() rather than uPortLog so that it is always
-//    // emitted, irrespective of whether debug is on or not
-//    printf("assert %s: %"PRIu32"\n", pFile, line);
-//    U_ASSERT(false);
-//}
-//#endif /* USE_FULL_ASSERT */
-
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t *pFile, uint32_t line)
+{
+    // printf() rather than uPortLog so that it is always
+    // emitted, irrespective of whether debug is on or not
+    printf("assert %s: %"PRIu32"\n", pFile, line);
+    U_ASSERT(false);
+}
+#endif /* USE_FULL_ASSERT */
+#endif //SYSTEM_CLOCK_UBXLIB
 /* ----------------------------------------------------------------
  * PUBLIC FUNCTIONS
  * -------------------------------------------------------------- */
@@ -130,9 +134,10 @@ int32_t uPortPlatformStart(void (*pEntryPoint)(void *),
 
         // Reset all peripherals, initialize the Flash interface and the Systick
         HAL_Init();
-
+#if defined (SYSTEM_CLOCK_UBXLIB)
         // Configure the system clock
         systemClockConfig();
+#endif //STM32F405xx
 
         // TODO: if I put an iprintf() here then all is fine.
         // If I don't then any attempt to print later

@@ -32,9 +32,11 @@
                                               any print or scan function is used. */
 
 #include "u_error_common.h"
-
+#if !defined (STM32F405xx)
 #include "stm32f437xx.h" // For ITM_SendChar()
-
+#else
+#include "stm32f405xx.h" // For ITM_SendChar()
+#endif //STM32F405xx
 /* ----------------------------------------------------------------
  * COMPILE-TIME MACROS
  * -------------------------------------------------------------- */
