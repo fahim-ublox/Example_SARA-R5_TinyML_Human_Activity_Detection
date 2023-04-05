@@ -1,21 +1,27 @@
-# Human Activity Detection using Tensor flow lite for microcontrolers using tinyML, u-blox product and libraries
+# Human Activity Detection using Machine Learning Cascade Architecure by using TensorFlow lite for microcontrolers, u-blox cellular product and libraries. 
 ## Description
-You can use detect human activity on microcontroller using tensorflow lite for microcontroller. And by using u-blox cellular products & libraries, you can send data to your server where a bigger model is deployed and human activity can be detected in better way. This project is being added to help u-blox customers for rapid prototyping and evaluating u-blox products. This repository is tested using C030-R412M board and Sparkfun's Asset tracker Micromod setup using STM32F405 microcontroller.
+You can use detect human activity using TensorFlow lite for microcontroller. By using u-blox cellular products & libraries, you can send data from remote devices to your server where a bigger model is deployed, hence human activity can be detected in better way in this **ML Cascade Architecture**. This project is being added to help u-blox customers for rapid prototyping and evaluating u-blox products. This repository is tested using C030-R412M board and Sparkfun's Asset tracker Micromod setup using STM32F405 microcontroller.
 
 This repo uses Git submodules: make sure that once it has been cloned you do something like:
 ```sh
 git submodule update --init --recursive
 ```
 
-### Build using build configuration through CMake.
+**Note-1** : You may need to add servers details or set your own URI, if you want to transfer data to cloud.
+**Note-2** : If you want to add your own accelerometer then remove +20 test data of accelerometer and feed accelerometer data to Model at 20 Hz to get inference.
+**Note-3** : By default only classified accelerometer test data are being feed to model in this firmware.  
 
-**Use following commands to build the firmware. **
+### Build using build configuration through CMake.
+Use following two commands to build the firmware.
+
 ```sh
 cmake -S . -B build/debug --warn-uninitialized -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_TOOLCHAIN_FILE=toolchain-STM32F405.cmake -GNinja
+```
+```sh
 cmake --build build/debug
 ```
-
-Flash the hex file.
+Flash the hex file & start executing the firmware. It is a ready to build and execute example. 
+**You should build and run this example firmware in 10 minutes if you are not doing something wrong!** 
 
 ### Hardware requirements
 | HW type | Name |
