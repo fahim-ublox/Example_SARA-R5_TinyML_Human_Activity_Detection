@@ -8,7 +8,9 @@ git submodule update --init --recursive
 ```
 
 **Note-1** : You may need to add servers details or set your own URI, if you want to transfer data to cloud.
+
 **Note-2** : If you want to add your own accelerometer then remove +20 test data of accelerometer and feed accelerometer data to Model at 20 Hz to get inference.
+
 **Note-3** : By default only classified accelerometer test data are being feed to model in this firmware.  
 
 ### Build using build configuration through CMake.
@@ -20,7 +22,8 @@ cmake -S . -B build/debug --warn-uninitialized -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_
 ```sh
 cmake --build build/debug
 ```
-Flash the hex file & start executing the firmware. It is a ready to build and execute example. 
+Flash the hex file & start executing the firmware. *It is a ready to build and execute example.*
+
 **You should build and run this example firmware in 10 minutes if you are not doing something wrong!** 
 
 ### Hardware requirements
